@@ -83,9 +83,10 @@ class URL:
     _userinfo: str
     _host: str
     _port: int
-    _segment: str
-    query: URLQuery
     path: URLPath
+    _params: str
+    query: URLQuery
+    _segment: str
 
     def __init__(self,
                  scheme: str,
@@ -161,12 +162,16 @@ class URL:
         self._userinfo = _userinfo
 
     @property
-    def username(self) -> str:
+    def username(self) -> str | None:
         warnings.warn("Use of the 'user:password' format in userinfo is "
-                      "deprecated according to RFC 3986",
+                      "deprecated according to RFC 3986.",
                       DeprecationWarning, 2)
-
-        return self._userinfo.split(':')[0]
+        if ':' in self._userinfo:
+            return self._userinfo.split(':')[0]
+        else:
+            warnings.warn("Userinfo field did not contain delimiter.",
+                          DeprecationWarning, 2)
+            return None
 
     @username.setter
     def username(self, _username: str):
@@ -199,7 +204,10 @@ class URL:
 
         _password = parse.quote(_password, _SUB_DELIMS + _PCT)
         userinfo = self._userinfo.split(':')
-        userinfo[1] = _password
+        if len(userinfo) > 1:
+            userinfo[1] = _password
+        else:
+            userinfo.append(_password)
         self._userinfo = ':'.join(userinfo)
 
     @property
