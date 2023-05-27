@@ -4,7 +4,7 @@ import urllib.parse as parse
 import string
 import warnings
 
-__all__ = ['URL', 'URLPath']
+__all__ = ['URL', 'URLPath', 'URLQuery']
 
 _GEN_DELIMS = ":/?#[]@"
 _SUB_DELIMS = "!$&'()*+,;="
@@ -64,9 +64,12 @@ class URLPath(list[str]):
         return URLPath(self)
 
 
-class URLQuery(dict[str, str]):
-    def __init__(self, query: dict):
-        super().__init__({str(key): str(query[key]) for key in query})
+class URLQuery(dict):
+    def __init__(self, query: dict | str):
+        if isinstance(query, dict):
+            super().__init__(query)
+        elif isinstance(query, str):
+            super().__init__(parse.parse_qsl(qs=query))
 
     def __str__(self) -> str:
         return parse.urlencode(self)
@@ -74,14 +77,17 @@ class URLQuery(dict[str, str]):
     def __repr__(self) -> str:
         return str(self)
 
+    def dict(self) -> dict:
+        return dict(self)
+
 
 class URL:
     _scheme: str
     _userinfo: str
     _host: str
     _port: int
-    _query_parameters: dict[str, str]
     _segment: str
+    query: URLQuery
     path: URLPath
 
     def __init__(self,
