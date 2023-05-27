@@ -77,9 +77,6 @@ class URLQuery(dict):
     def __repr__(self) -> str:
         return str(self)
 
-    def dict(self) -> dict:
-        return dict(self)
-
 
 class URL:
     _scheme: str
